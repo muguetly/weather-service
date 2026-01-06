@@ -19,7 +19,7 @@ public class WeatherService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 현재 날씨 (기존)
+    // ✅ 도시명으로 현재 날씨
     public String getWeatherByCity(String city) {
         String url = "https://api.openweathermap.org/data/2.5/weather"
                 + "?q=" + city
@@ -30,7 +30,19 @@ public class WeatherService {
         return restTemplate.getForObject(url, String.class);
     }
 
-    // ⭐ 3일 예보 (완성형)
+    // ✅ 좌표로 현재 날씨 (신규)
+    public String getWeatherByLocation(double lat, double lon) {
+        String url = "https://api.openweathermap.org/data/2.5/weather"
+                + "?lat=" + lat
+                + "&lon=" + lon
+                + "&appid=" + apiKey
+                + "&units=metric"
+                + "&lang=kr";
+
+        return restTemplate.getForObject(url, String.class);
+    }
+
+    // ✅ 도시명으로 3일 예보
     public List<ForecastDayDto> get3DayForecast(String city) {
         String url = "https://api.openweathermap.org/data/2.5/forecast"
                 + "?q=" + city
@@ -39,7 +51,24 @@ public class WeatherService {
                 + "&lang=kr";
 
         String json = restTemplate.getForObject(url, String.class);
+        return parseForecast(json);
+    }
 
+    // ✅ 좌표로 3일 예보 (신규)
+    public List<ForecastDayDto> get3DayForecastByLocation(double lat, double lon) {
+        String url = "https://api.openweathermap.org/data/2.5/forecast"
+                + "?lat=" + lat
+                + "&lon=" + lon
+                + "&appid=" + apiKey
+                + "&units=metric"
+                + "&lang=kr";
+
+        String json = restTemplate.getForObject(url, String.class);
+        return parseForecast(json);
+    }
+
+    // ✅ 공통 예보 파싱 로직 (분리)
+    private List<ForecastDayDto> parseForecast(String json) {
         try {
             JsonNode root = objectMapper.readTree(json);
             JsonNode list = root.get("list");
